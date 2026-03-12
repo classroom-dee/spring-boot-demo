@@ -1,0 +1,59 @@
+services:
+  app:
+    image: fsopen-notes-front-dev
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./frontend:/usr/src/app
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    container_name: fsopen_notes_front_dev
+    depends_on:
+      - server
+  
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 8080:80
+    container_name: fsopen_notes_reverse_proxy_dev
+    depends_on:
+      - app
+
+  server:
+    image: fsopen-notes-backend-dev
+    build:
+      context: ./spring-boot-demo
+      dockerfile: dev.Dockerfile
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PW: ${POSTGRES_PW}
+      SPRING_PORT: ${SPRING_PORT}
+    volumes:
+      - ./spring-boot-demo:/usr/src/app
+    container_name: fsopen_notes_backend_dev
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+
+  postgres-dev:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PW}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - fso-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      timeout: 20s
+      retries: 3
+  
+volumes:
+  fso-pg-data:

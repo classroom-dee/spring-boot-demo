@@ -1,0 +1,25 @@
+<!-- THIS IS NOT USED! -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Demo Notes</title>
+</head>
+<body>
+<h1>Amoeba Notes</h1>
+
+<form action="/add" method="post">
+    <input type="text" name="content" />
+    <button type="submit">Add</button>
+</form>
+
+<ul>
+    <li th:each="note : ${notes}">
+        <span th:text="${note.content}"></span>
+        <form th:action="@{'/delete/' + ${note.id}}" method="post" style="display:inline">
+            <button type="submit">X</button>
+        </form>
+    </li>
+</ul>
+
+</body>
+</html>

@@ -1,32 +1,35 @@
+# Separating dev environs and prod environs would be nice
+
 services:
   app:
-    image: fsopen-notes-front-dev
+    image: fsopen-notes-front
     build:
       context: ./frontend
-      dockerfile: dev.Dockerfile
+      dockerfile: Dockerfile
     volumes:
       - ./frontend:/usr/src/app
     environment:
       VITE_API_URL: ${VITE_API_URL}
-    container_name: fsopen_notes_front_dev
+    container_name: fsopen_notes_front
     depends_on:
       - server
   
   nginx:
     image: nginx
     volumes:
-      - ./nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - 8080:80
-    container_name: fsopen_notes_reverse_proxy_dev
+    container_name: fsopen_notes_reverse_proxy
     depends_on:
       - app
+      - server
 
   server:
-    image: fsopen-notes-backend-dev
+    image: fsopen-notes-backend
     build:
       context: ./backend
-      dockerfile: dev.Dockerfile
+      dockerfile: Dockerfile
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -36,7 +39,7 @@ services:
       SPRING_PORT: ${SPRING_PORT}
     volumes:
       - ./backend:/usr/src/app
-    container_name: fsopen_notes_backend_dev
+    container_name: fsopen_notes_backend
     depends_on:
       postgres-dev:
         condition: service_healthy
